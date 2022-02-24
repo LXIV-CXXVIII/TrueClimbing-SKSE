@@ -225,7 +225,7 @@ void Loki_TrueClimbing::Update(RE::Actor* a_actor) {
             bool jmp;
             a_actor->GetGraphVariableBool("CanJump", jmp);
             if (jmp) {
-                auto context = a_actor->GetCharController()->context;
+                auto& context = a_actor->GetCharController()->context;
                 if (isClimbing && a_actor->actorState1.sprinting) {
                     a_actor->SetGraphVariableInt("climb_ClimbEndType", ClimbEndType::kJumpBackwards);
                     if (a_actor->NotifyAnimationGraph("climb_ClimbEnd")) {
@@ -339,4 +339,6 @@ void Loki_TrueClimbing::Update(RE::Actor* a_actor) {
 
     }
     return _Update(a_actor);
+
+    RE::hkpCharacterContext;
 }
