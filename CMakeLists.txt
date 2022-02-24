@@ -6,7 +6,7 @@ set(VCPKG_TARGET_TRIPLET "x64-windows-static" CACHE STRING "")
 # ---- Project ----
 
 project(
-	ExampleProject
+	loki_TrueClimbingSKSE
 	VERSION 1.0.0
 	LANGUAGES CXX
 )
@@ -125,6 +125,10 @@ set(headers
 
 set(sources
 	src/main.cpp
+	src/Raycasting/Raycasting.cpp
+	src/Raycasting/Raycasting.h
+	src/Loki_TrueClimbing.cpp
+	src/Loki_TrueClimbing.h
 	src/PCH.cpp
 )
 
