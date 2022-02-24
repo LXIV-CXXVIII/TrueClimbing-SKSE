@@ -140,10 +140,6 @@ void Loki_TrueClimbing::Update(RE::Actor* a_actor) {
         controller->context.currentState = RE::hkpCharacterStateType::kClimbing;
         static bool isClimbing = false;
 
-
-        RE::PlayerCharacter::GetSingleton()->questLog;
-
-
         auto CalculateForwardRaycast = [a_actor, ptr](float _dist, float _height) -> RE::hkVector4 {
             auto center = a_actor->GetCurrent3D()->worldBound.center;
             auto forwardvec = ptr->GetForwardVector(center);
@@ -154,28 +150,6 @@ void Loki_TrueClimbing::Update(RE::Actor* a_actor) {
             RE::hkVector4 hkv = { normalized.x, normalized.y, normalized.z, 0.00f };
             return hkv;
         };
-
-
-        auto center = a_actor->GetCurrent3D()->worldBound.center;
-        center.z += ptr->rayCastLowVaultHeight;
-        RE::hkVector4 start = { center.x, center.y, center.z, 0.00f };
-        auto forwardvec = ptr->GetForwardVector(center);
-        forwardvec.x *= ptr->rayCastLowVaultDist;
-        forwardvec.y *= ptr->rayCastLowVaultDist;
-        forwardvec.z = 0.00f;
-        auto normalized = forwardvec / forwardvec.Length();
-        RE::hkVector4 end = { normalized.x, normalized.y, normalized.z, 0.00f };
-
-
-        if (ptr->DoRayCast(a_actor, start, end)) {
-            bool jmp;
-            a_actor->GetGraphVariableBool("CanJump", jmp);
-            if (jmp) { // if jump input
-                a_actor->SetGraphVariableInt("climb_ClimbStartType", ClimbStartType::kSmallVault);
-                a_actor->NotifyAnimationGraph("climb_ClimbStart");  // start climb
-                //isClimbing = true;
-            }
-        }
 
         if (ptr->DoRayCast(a_actor, [a_actor, ptr]() -> RE::hkVector4 {
             auto center = a_actor->GetCurrent3D()->worldBound.center;
@@ -256,87 +230,6 @@ void Loki_TrueClimbing::Update(RE::Actor* a_actor) {
                 }
             }
         }
-
-        /**
-        if (ptr->DoRayCast(a_actor, start, end)) {
-            bool jmp;
-            a_actor->GetGraphVariableBool("CanJump", jmp);
-            if (jmp) { // if jump input
-                if (isClimbing) { // if we're already climbing
-                    if (a_actor->actorState1.sprinting) {
-                        a_actor->SetGraphVariableInt("climb_ClimbEndType", EndType::kJumpBackwards);
-                        a_actor->NotifyAnimationGraph("climb_ClimbEnd");
-                        a_actor->GetCharController()->context.currentState = RE::hkpCharacterStateType::kJumping;
-                        bool isClimbing = false;
-                    }
-                    a_actor->SetGraphVariableInt("climb_ClimbEndType", EndType::kJumpForwards);
-                    a_actor->NotifyAnimationGraph("climb_ClimbEnd");  // end climb
-                    a_actor->GetCharController()->context.currentState = RE::hkpCharacterStateType::kJumping;
-                    bool isClimbing = false;
-                } else { // if we're not climbing
-                    if (a_actor->GetCharController()->context.currentState == RE::hkpCharacterStateType::kInAir) {
-                        a_actor->SetGraphVariableInt("climb_ClimbStartType", StartType::kClimbFromAir);
-                        if (a_actor->NotifyAnimationGraph("climb_ClimbStart")) {  // start climb
-                            bool isClimbing = true;
-                        }
-                    } else { // if in air above, if on ground below
-                        a_actor->SetGraphVariableInt("climb_ClimbStartType", StartType::kClimbFromGround);
-                        a_actor->NotifyAnimationGraph("climb_ClimbStart");  // start climb
-                        bool isClimbing = true;
-                    }
-                }
-            }
-        }
-        */
-
-
-
-        /**
-        RE::hkVector4 start;
-        controller->GetPositionImpl(start, false);
-        start.quad.m128_f32[2] += 5.00f;
-        auto from = start;
-
-        RE::NiPoint3 pos = a_actor->data.location;
-        RE::NiPoint3 angl = a_actor->data.angle;
-        auto forward = controller->forwardVec;
-        for (int i = 0; i < 3; i++) {
-            forward.quad.m128_f32[i] += 10.00f;
-        }
-
-
-        RE::hkVector4 end;
-        float dist = ptr->rayCastDist;
-        end.quad.m128_f32[0] = from.quad.m128_f32[0] + (cos(from.quad.m128_f32[3]) * dist); // x
-        end.quad.m128_f32[1] = from.quad.m128_f32[1] + (sin(from.quad.m128_f32[3]) * dist); // y
-        end.quad.m128_f32[2] = from.quad.m128_f32[2]; // z
-        end.quad.m128_f32[3] = from.quad.m128_f32[3]; // a
-        auto to = end;
-        */
-
-        /*
-        if (Loki_Climbing::DoRayCast(a_actor, from, forward)) {
-            RE::ConsoleLog::GetSingleton()->Print("Raycast has hit collision object");
-            a_actor->SetGraphVariableBool("IsClimbing", true);
-            a_actor->SetGraphVariableInt("IsClimb", 1);
-            controller->context.currentState = RE::hkpCharacterStateType::kClimbing;
-            controller->pitchAngle = -1.50f;
-
-        } else {
-            bool isClimbing = FALSE;
-            a_actor->GetGraphVariableBool("IsClimbing", isClimbing);
-            if (isClimbing) {
-                a_actor->SetGraphVariableBool("IsClimbing", false);
-                controller->context.currentState = controller->context.previousState;
-            }
-
-            //a_actor->SetGraphVariableBool("IsClimbing", false);
-            //a_actor->SetGraphVariableInt("IsClimb", 0);
-            //a_actor->GetCharController()->context.currentState = RE::hkpCharacterStateType::kJumping;
-            //RE::hkpCharacterStateType::kInAir    could be good for shield surfing?
-        }
-        */
-
     }
     return _Update(a_actor);
 
