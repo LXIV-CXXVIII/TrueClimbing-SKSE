@@ -1,5 +1,11 @@
 #include "Raycasting.h"
 
+Loki_Raycasting::Loki_Raycasting() {
+}
+
+Loki_Raycasting::~Loki_Raycasting() {
+}
+
 bool Loki_Raycasting::DoRayCast(RE::Actor* a_actor, RE::hkVector4 a_from, RE::hkVector4 a_to) {
     RE::hkpWorldRayCastInput input = { a_from, a_to, false, 0 };
     RE::hkpWorldRayCastOutput output = {};

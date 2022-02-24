@@ -240,7 +240,7 @@ void Loki_TrueClimbing::Update(RE::Actor* a_actor) {
                         isClimbing = false;
                     }// end climb
                 } 
-                else if (context.currentState = RE::hkpCharacterStateType::kInAir) {
+                else if (context.currentState == RE::hkpCharacterStateType::kInAir) {
                     a_actor->SetGraphVariableInt("climb_ClimbStartType", ClimbStartType::kClimbFromAir);
                     if (a_actor->NotifyAnimationGraph("climb_ClimbStart")) {
                         context.currentState = RE::hkpCharacterStateType::kClimbing;
