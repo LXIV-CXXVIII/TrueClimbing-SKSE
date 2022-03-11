@@ -186,10 +186,10 @@ void Loki::TrueClimbing::Update(RE::Actor* a_actor) {
         } 
         else if (ptr->DoRayCast(a_actor, [a_actor, ptr]() -> RE::hkVector4 {  // do raycast
             auto center = a_actor->GetCurrent3D()->worldBound.center;
-            center.z += ptr->rayCastLargeVaultHeight;
+            center.z += ptr->rayCastHighVaultHeight;
             RE::hkVector4 start = { center.x, center.y, center.z, 0.00f };
             return start;
-        }(), CalculateForwardRaycast(ptr->rayCastLargeVaultDist, ptr->rayCastLargeVaultHeight))) {
+        }(), CalculateForwardRaycast(ptr->rayCastHighVaultDist, ptr->rayCastHighVaultHeight))) {
             bool jmp;
             a_actor->GetGraphVariableBool("CanJump", jmp);
             if (jmp) {

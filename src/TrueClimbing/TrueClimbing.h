@@ -39,8 +39,8 @@ namespace Loki {
         static void InstallClimbSimHook();
 
         float rayCastDist;
-        float rayCastLowVaultDist, rayCastMediumVaultDist, rayCastLargeVaultDist, rayCastClimbDist; // 00, 04, 08, 0C
-        float rayCastLowVaultHeight, rayCastMediumVaultHeight, rayCastLargeVaultHeight, rayCastClimbHeight; // 10, 14, 18, 1C
+        float rayCastLowVaultDist, rayCastMediumVaultDist, rayCastHighVaultDist, rayCastClimbDist; // 00, 04, 08, 0C
+        float rayCastLowVaultHeight, rayCastMediumVaultHeight, rayCastHighVaultHeight, rayCastClimbHeight; // 10, 14, 18, 1C
 
     private:
         static void ControllerSubroutine(RE::bhkCharacterController* a_controller);
