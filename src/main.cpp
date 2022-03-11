@@ -1,5 +1,4 @@
-﻿#include "Loki_TrueClimbing.h"
-#include "Raycasting/Raycasting.h"
+﻿#include "TrueClimbing/TrueClimbing.h"
 
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface * a_skse, SKSE::PluginInfo * a_info)
 {
@@ -69,9 +68,9 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface * a_
     SKSE::Init(a_skse);
     SKSE::AllocTrampoline(128);
 
-    Loki_TrueClimbing::InstallUpdateHook();
+    Loki::TrueClimbing::InstallUpdateHook();
     //Loki_Climbing::InstallSimulateClimbingHook();
-    Loki_TrueClimbing::InstallClimbSimHook();
+    Loki::TrueClimbing::InstallClimbSimHook();
 
     return true;
 }

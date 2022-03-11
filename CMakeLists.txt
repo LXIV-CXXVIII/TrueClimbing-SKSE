@@ -125,10 +125,11 @@ set(headers
 
 set(sources
 	src/main.cpp
-	src/Raycasting/Raycasting.cpp
-	src/Raycasting/Raycasting.h
-	src/Loki_TrueClimbing.cpp
-	src/Loki_TrueClimbing.h
+	src/TrueClimbing/TrueClimbing.cpp
+	src/TrueClimbing/TrueClimbing.h
+	src/TrueClimbing/TrueDirectionalMovementAPI.h
+	src/TrueClimbing/Raycasting/Raycasting.cpp
+	src/TrueClimbing/Raycasting/Raycasting.h
 	src/PCH.cpp
 )
 

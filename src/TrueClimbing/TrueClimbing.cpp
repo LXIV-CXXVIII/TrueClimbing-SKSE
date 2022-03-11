@@ -1,30 +1,30 @@
-#include "Loki_TrueClimbing.h"
+#include "TrueClimbing/TrueClimbing.h"
 
-void* Loki_TrueClimbing::CodeAllocation(Xbyak::CodeGenerator& a_code, SKSE::Trampoline* t_ptr) {
+void* Loki::TrueClimbing::CodeAllocation(Xbyak::CodeGenerator& a_code, SKSE::Trampoline* t_ptr) {
     auto result = t_ptr->allocate(a_code.getSize());
     std::memcpy(result, a_code.getCode(), a_code.getSize());
     return result;
 }
 
-Loki_TrueClimbing::Loki_TrueClimbing() {
+Loki::TrueClimbing::TrueClimbing() {
     CSimpleIniA ini;
     ini.SetUnicode();
     auto filename = L"Data/SKSE/Plugins/loki_Climbing.ini";
     SI_Error rc = ini.LoadFile(filename);
 
-    this->rayCastDist = ini.GetDoubleValue("SETTINGS", "fRayCastDistance", -1.00f);
+    rayCastDist = ini.GetDoubleValue("SETTINGS", "fRayCastDistance", -1.00f);
     return;
 }
 
-Loki_TrueClimbing::~Loki_TrueClimbing() {
+Loki::TrueClimbing::~TrueClimbing() {
 }
 
-Loki_TrueClimbing* Loki_TrueClimbing::GetSingleton() {
-    static Loki_TrueClimbing* singleton = new Loki_TrueClimbing();
+Loki::TrueClimbing* Loki::TrueClimbing::GetSingleton() {
+    static Loki::TrueClimbing* singleton = new Loki::TrueClimbing();
     return singleton;
 }
 
-void Loki_TrueClimbing::InstallUpdateHook() {
+void Loki::TrueClimbing::InstallUpdateHook() {
     REL::Relocation<std::uintptr_t> ActorUpdate{ REL::ID(39375) };
 
     auto& trampoline = SKSE::GetTrampoline();
@@ -33,7 +33,7 @@ void Loki_TrueClimbing::InstallUpdateHook() {
     logger::info("Actor Update hook injected");
 }
 
-void Loki_TrueClimbing::InstallSimulateClimbingHook() {
+void Loki::TrueClimbing::InstallSimulateClimbingHook() {
     REL::Relocation<std::uintptr_t> ClimbSim{ REL::ID(78195) };
 
     auto& trampoline = SKSE::GetTrampoline();
@@ -42,7 +42,7 @@ void Loki_TrueClimbing::InstallSimulateClimbingHook() {
     logger::info("Climbing Simulation hook injected");
 }
 
-void Loki_TrueClimbing::InstallClimbSimHook() {
+void Loki::TrueClimbing::InstallClimbSimHook() {
     REL::Relocation<std::uintptr_t> ClimbSim{ REL::ID(78195/*e1d520*/) };
     REL::Relocation<std::uintptr_t> subroutine{ REL::ID(76440/*dc08e0*/) };
 
@@ -94,13 +94,13 @@ void Loki_TrueClimbing::InstallClimbSimHook() {
     trampoline.write_branch<5>(ClimbSim.address(), CodeAllocation(patch, &trampoline));
 }
 
-void Loki_TrueClimbing::ControllerSubroutine(RE::bhkCharacterController* a_controller) {
+void Loki::TrueClimbing::ControllerSubroutine(RE::bhkCharacterController* a_controller) {
     using func_t = decltype(ControllerSubroutine);
     REL::Relocation<func_t> func{ REL::ID(76440) }; /*dc08e0*/
     return func(a_controller);
 }
 
-void Loki_TrueClimbing::bhkCharacterStateClimbing_SimPhys(RE::bhkCharacterStateClimbing* a_climbing, RE::bhkCharacterController* a_controller) {
+void Loki::TrueClimbing::bhkCharacterStateClimbing_SimPhys(RE::bhkCharacterStateClimbing* a_climbing, RE::bhkCharacterController* a_controller) {
     __m128 z128 = { 0.0f,0.0f,0.0f,0.0f };
 
     __m128 vMod = a_controller->velocityMod.quad;
@@ -132,8 +132,15 @@ void Loki_TrueClimbing::bhkCharacterStateClimbing_SimPhys(RE::bhkCharacterStateC
     */
 }
 
-void Loki_TrueClimbing::Update(RE::Actor* a_actor) {
-    auto ptr = Loki_TrueClimbing::GetSingleton();
+void Loki::TrueClimbing::Update(RE::Actor* a_actor) {
+    auto ptr = Loki::TrueClimbing::GetSingleton();
+
+    auto bhkWorld = a_actor->parentCell->GetbhkWorld();
+    auto hkpWorld = bhkWorld->GetWorld();
+    
+    hkpWorld->simulationType.set(RE::hkpWorldCinfo::SimulationType::kContinuous);
+    auto c = a_actor->GetCharController();
+    RE::bhkCharacterController;
 
     if (a_actor->IsPlayerRef()) {
         auto controller = a_actor->GetCharController();
@@ -151,7 +158,7 @@ void Loki_TrueClimbing::Update(RE::Actor* a_actor) {
             return hkv;
         };
 
-        if (ptr->DoRayCast(a_actor, [a_actor, ptr]() -> RE::hkVector4 {
+        if (ptr->DoRayCast(a_actor, [a_actor, ptr]() -> RE::hkVector4 {  // do raycast
             auto center = a_actor->GetCurrent3D()->worldBound.center;
             center.z += ptr->rayCastLowVaultHeight;
             RE::hkVector4 start = { center.x, center.y, center.z, 0.00f };
@@ -164,7 +171,7 @@ void Loki_TrueClimbing::Update(RE::Actor* a_actor) {
                 a_actor->NotifyAnimationGraph("climb_ClimbStart");  // start vault
             }
         } 
-        else if (ptr->DoRayCast(a_actor, [a_actor, ptr]() -> RE::hkVector4 {
+        else if (ptr->DoRayCast(a_actor, [a_actor, ptr]() -> RE::hkVector4 {  // do raycast
             auto center = a_actor->GetCurrent3D()->worldBound.center;
             center.z += ptr->rayCastMediumVaultHeight;
             RE::hkVector4 start = { center.x, center.y, center.z, 0.00f };
@@ -177,7 +184,7 @@ void Loki_TrueClimbing::Update(RE::Actor* a_actor) {
                 a_actor->NotifyAnimationGraph("climb_ClimbStart");  // start vault
             }
         } 
-        else if (ptr->DoRayCast(a_actor, [a_actor, ptr]() -> RE::hkVector4 {
+        else if (ptr->DoRayCast(a_actor, [a_actor, ptr]() -> RE::hkVector4 {  // do raycast
             auto center = a_actor->GetCurrent3D()->worldBound.center;
             center.z += ptr->rayCastLargeVaultHeight;
             RE::hkVector4 start = { center.x, center.y, center.z, 0.00f };
@@ -190,7 +197,7 @@ void Loki_TrueClimbing::Update(RE::Actor* a_actor) {
                 a_actor->NotifyAnimationGraph("climb_ClimbStart");  // start vault
             }
         } 
-        else if (ptr->DoRayCast(a_actor, [a_actor, ptr]() -> RE::hkVector4 {
+        else if (ptr->DoRayCast(a_actor, [a_actor, ptr]() -> RE::hkVector4 {  // do raycast
             auto center = a_actor->GetCurrent3D()->worldBound.center;
             center.z += ptr->rayCastClimbHeight;
             RE::hkVector4 start = { center.x, center.y, center.z, 0.00f };
@@ -232,6 +239,4 @@ void Loki_TrueClimbing::Update(RE::Actor* a_actor) {
         }
     }
     return _Update(a_actor);
-
-    RE::hkpCharacterContext;
 }

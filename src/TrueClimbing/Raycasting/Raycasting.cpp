@@ -1,12 +1,12 @@
 #include "Raycasting.h"
 
-Loki_Raycasting::Loki_Raycasting() {
+Loki::Raycasting::Raycasting() {
 }
 
-Loki_Raycasting::~Loki_Raycasting() {
+Loki::Raycasting::~Raycasting() {
 }
 
-bool Loki_Raycasting::DoRayCast(RE::Actor* a_actor, RE::hkVector4 a_from, RE::hkVector4 a_to) {
+bool Loki::Raycasting::DoRayCast(RE::Actor* a_actor, RE::hkVector4 a_from, RE::hkVector4 a_to) {
     RE::hkpWorldRayCastInput input = { a_from, a_to, false, 0 };
     RE::hkpWorldRayCastOutput output = {};
 
@@ -20,7 +20,7 @@ bool Loki_Raycasting::DoRayCast(RE::Actor* a_actor, RE::hkVector4 a_from, RE::hk
     return output.HasHit();
 }
 
-RE::NiPoint3 Loki_Raycasting::GetForwardVector(RE::NiPoint3 eulerIn) {
+RE::NiPoint3 Loki::Raycasting::GetForwardVector(RE::NiPoint3 eulerIn) {
     float pitch = eulerIn.x;
     float yaw = eulerIn.z;
 
@@ -30,7 +30,7 @@ RE::NiPoint3 Loki_Raycasting::GetForwardVector(RE::NiPoint3 eulerIn) {
         sin(pitch));
 }
 
-RE::NiPoint3 Loki_Raycasting::RotateVector(RE::NiQuaternion quatIn, RE::NiPoint3 vecIn) {
+RE::NiPoint3 Loki::Raycasting::RotateVector(RE::NiQuaternion quatIn, RE::NiPoint3 vecIn) {
     float num = quatIn.x * 2.0f;
     float num2 = quatIn.y * 2.0f;
     float num3 = quatIn.z * 2.0f;
@@ -50,6 +50,6 @@ RE::NiPoint3 Loki_Raycasting::RotateVector(RE::NiQuaternion quatIn, RE::NiPoint3
     return result;
 }
 
-RE::NiPoint3 Loki_Raycasting::GetForwardVector(RE::NiQuaternion quatIn) {
+RE::NiPoint3 Loki::Raycasting::GetForwardVector(RE::NiQuaternion quatIn) {
     return RotateVector(quatIn, RE::NiPoint3(0.0f, 1.0f, 0.0f));
 }
