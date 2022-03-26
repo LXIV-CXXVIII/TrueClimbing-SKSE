@@ -1,6 +1,7 @@
 #pragma once
-#include "TrueDirectionalMovementAPI.h"
 #include "Raycasting/Raycasting.h"
+#include "APIs/TrueDirectionalMovementAPI.h"
+#include "APIs/TrueHUDAPI.h"
 #include "C:/dev/simpleini-master/SimpleIni.h"
 //#include <toml++/toml.h>
 
@@ -41,6 +42,10 @@ namespace Loki {
         float rayCastDist;
         float rayCastLowVaultDist, rayCastMediumVaultDist, rayCastHighVaultDist, rayCastClimbDist; // 00, 04, 08, 0C
         float rayCastLowVaultHeight, rayCastMediumVaultHeight, rayCastHighVaultHeight, rayCastClimbHeight; // 10, 14, 18, 1C
+
+        static inline TDM_API::IVTDM2* g_TDM = NULL;
+        static inline TRUEHUD_API::IVTrueHUD3* g_TrueHUD = NULL;
+        bool tControl;
 
     private:
         static void ControllerSubroutine(RE::bhkCharacterController* a_controller);

@@ -6,7 +6,7 @@ Loki::Raycasting::Raycasting() {
 Loki::Raycasting::~Raycasting() {
 }
 
-bool Loki::Raycasting::DoRayCast(RE::Actor* a_actor, RE::hkVector4 a_from, RE::hkVector4 a_to) {
+RE::hkpWorldRayCastOutput* Loki::Raycasting::DoRayCast(RE::Actor* a_actor, RE::hkVector4 a_from, RE::hkVector4 a_to) {
     RE::hkpWorldRayCastInput input = { a_from, a_to, false, 0 };
     RE::hkpWorldRayCastOutput output = {};
 
@@ -17,7 +17,10 @@ bool Loki::Raycasting::DoRayCast(RE::Actor* a_actor, RE::hkVector4 a_from, RE::h
     auto bhkWorld = a_actor->parentCell->GetbhkWorld();
     auto hkpWorld = bhkWorld->GetWorld();
     hkpWorld->CastRay(input, output);
-    return output.HasHit();
+
+    g_TrueHUD->DrawLine((const RE::NiPoint3&)a_from, (const RE::NiPoint3&)a_to, 0.1f, 0xFF0000, 1.0f);
+
+    return &output;
 }
 
 RE::NiPoint3 Loki::Raycasting::GetForwardVector(RE::NiPoint3 eulerIn) {

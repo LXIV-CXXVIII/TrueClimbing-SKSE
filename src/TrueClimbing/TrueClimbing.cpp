@@ -135,16 +135,16 @@ void Loki::TrueClimbing::bhkCharacterStateClimbing_SimPhys(RE::bhkCharacterState
 void Loki::TrueClimbing::Update(RE::Actor* a_actor) {
     auto ptr = Loki::TrueClimbing::GetSingleton();
 
-    auto bhkWorld = a_actor->parentCell->GetbhkWorld();
-    auto hkpWorld = bhkWorld->GetWorld();
+    //auto bhkWorld = a_actor->parentCell->GetbhkWorld();
+    //auto hkpWorld = bhkWorld->GetWorld();
     
-    hkpWorld->simulationType.set(RE::hkpWorldCinfo::SimulationType::kContinuous);
-    auto c = a_actor->GetCharController();
-    RE::bhkCharacterController;
+    //hkpWorld->simulationType.set(RE::hkpWorldCinfo::SimulationType::kContinuous);
+    //auto c = a_actor->GetCharController();
+    //RE::bhkCharacterController;
 
     if (a_actor->IsPlayerRef()) {
-        auto controller = a_actor->GetCharController();
-        controller->context.currentState = RE::hkpCharacterStateType::kClimbing;
+        //auto controller = a_actor->GetCharController();
+        //controller->context.currentState = RE::hkpCharacterStateType::kClimbing;
         static bool isClimbing = false;
 
         auto CalculateForwardRaycast = [a_actor, ptr](float _dist, float _height) -> RE::hkVector4 {
@@ -158,84 +158,114 @@ void Loki::TrueClimbing::Update(RE::Actor* a_actor) {
             return hkv;
         };
 
-        if (ptr->DoRayCast(a_actor, [a_actor, ptr]() -> RE::hkVector4 {  // do raycast
+        if (auto output = ptr->DoRayCast(a_actor, [a_actor, ptr]() -> RE::hkVector4 {  // do raycast
             auto center = a_actor->GetCurrent3D()->worldBound.center;
             center.z += ptr->rayCastLowVaultHeight;
             RE::hkVector4 start = { center.x, center.y, center.z, 0.00f };
             return start;
         }(), CalculateForwardRaycast(ptr->rayCastLowVaultDist, ptr->rayCastLowVaultHeight))) {
-            bool jmp;
-            a_actor->GetGraphVariableBool("CanJump", jmp);
-            if (jmp) {
-                a_actor->SetGraphVariableInt("climb_ClimbStartType", ClimbStartType::kSmallVault);
-                a_actor->NotifyAnimationGraph("climb_ClimbStart");  // start vault
+
+            if (output->HasHit()) {
+                bool jmp;
+                a_actor->GetGraphVariableBool("CanJump", jmp);
+                if (jmp) {
+                    a_actor->SetGraphVariableInt("climb_ClimbStartType", ClimbStartType::kSmallVault);
+                    a_actor->NotifyAnimationGraph("climb_ClimbStart");  // start vault
+                }
             }
+
         } 
-        else if (ptr->DoRayCast(a_actor, [a_actor, ptr]() -> RE::hkVector4 {  // do raycast
+        else if (auto output = ptr->DoRayCast(a_actor, [a_actor, ptr]() -> RE::hkVector4 {  // do raycast
             auto center = a_actor->GetCurrent3D()->worldBound.center;
             center.z += ptr->rayCastMediumVaultHeight;
             RE::hkVector4 start = { center.x, center.y, center.z, 0.00f };
             return start;
         }(), CalculateForwardRaycast(ptr->rayCastMediumVaultDist, ptr->rayCastMediumVaultHeight))) {
-            bool jmp;
-            a_actor->GetGraphVariableBool("CanJump", jmp);
-            if (jmp) {
-                a_actor->SetGraphVariableInt("climb_ClimbStartType", ClimbStartType::kMediumVault);
-                a_actor->NotifyAnimationGraph("climb_ClimbStart");  // start vault
+
+            if (output->HasHit()) {
+                bool jmp;
+                a_actor->GetGraphVariableBool("CanJump", jmp);
+                if (jmp) {
+                    a_actor->SetGraphVariableInt("climb_ClimbStartType", ClimbStartType::kMediumVault);
+                    a_actor->NotifyAnimationGraph("climb_ClimbStart");  // start vault
+                }
             }
+
         } 
-        else if (ptr->DoRayCast(a_actor, [a_actor, ptr]() -> RE::hkVector4 {  // do raycast
+        else if (auto output = ptr->DoRayCast(a_actor, [a_actor, ptr]() -> RE::hkVector4 {  // do raycast
             auto center = a_actor->GetCurrent3D()->worldBound.center;
             center.z += ptr->rayCastHighVaultHeight;
             RE::hkVector4 start = { center.x, center.y, center.z, 0.00f };
             return start;
         }(), CalculateForwardRaycast(ptr->rayCastHighVaultDist, ptr->rayCastHighVaultHeight))) {
-            bool jmp;
-            a_actor->GetGraphVariableBool("CanJump", jmp);
-            if (jmp) {
-                a_actor->SetGraphVariableInt("climb_ClimbStartType", ClimbStartType::kLargeVault);
-                a_actor->NotifyAnimationGraph("climb_ClimbStart");  // start vault
+
+            if (output->HasHit()) {
+                bool jmp;
+                a_actor->GetGraphVariableBool("CanJump", jmp);
+                if (jmp) {
+                    a_actor->SetGraphVariableInt("climb_ClimbStartType", ClimbStartType::kLargeVault);
+                    a_actor->NotifyAnimationGraph("climb_ClimbStart");  // start vault
+                }
             }
+
         } 
-        else if (ptr->DoRayCast(a_actor, [a_actor, ptr]() -> RE::hkVector4 {  // do raycast
+        else if (auto output = ptr->DoRayCast(a_actor, [a_actor, ptr]() -> RE::hkVector4 {  // do raycast
             auto center = a_actor->GetCurrent3D()->worldBound.center;
             center.z += ptr->rayCastClimbHeight;
             RE::hkVector4 start = { center.x, center.y, center.z, 0.00f };
             return start;
         }(), CalculateForwardRaycast(ptr->rayCastClimbDist, ptr->rayCastClimbHeight))) {
-            bool jmp;
-            a_actor->GetGraphVariableBool("CanJump", jmp);
-            if (jmp) {
-                auto& context = a_actor->GetCharController()->context;
-                if (isClimbing && a_actor->actorState1.sprinting) {
-                    a_actor->SetGraphVariableInt("climb_ClimbEndType", ClimbEndType::kJumpBackwards);
-                    if (a_actor->NotifyAnimationGraph("climb_ClimbEnd")) {
-                        context.currentState = RE::hkpCharacterStateType::kJumping;
-                        isClimbing = false;
-                    }// end climb
-                } 
-                else if (isClimbing) {
-                    a_actor->SetGraphVariableInt("climb_ClimbEndType", ClimbEndType::kJumpForwards);
-                    if (a_actor->NotifyAnimationGraph("climb_ClimbEnd")) {
-                        context.currentState = RE::hkpCharacterStateType::kJumping;
-                        isClimbing = false;
-                    }// end climb
-                } 
-                else if (context.currentState == RE::hkpCharacterStateType::kInAir) {
-                    a_actor->SetGraphVariableInt("climb_ClimbStartType", ClimbStartType::kClimbFromAir);
-                    if (a_actor->NotifyAnimationGraph("climb_ClimbStart")) {
-                        context.currentState = RE::hkpCharacterStateType::kClimbing;
-                        isClimbing = true;
-                    }// start climb
-                } 
-                else {
-                    a_actor->SetGraphVariableInt("climb_ClimbStartType", ClimbStartType::kClimbFromGround);
-                    if (a_actor->NotifyAnimationGraph("climb_ClimbStart")) {
-                        context.currentState = RE::hkpCharacterStateType::kClimbing;
-                        isClimbing = true;
-                    }// start climb
+
+            if (output->HasHit()) {
+                bool jmp;
+                a_actor->GetGraphVariableBool("CanJump", jmp);
+                if (jmp) {
+                    auto context = a_actor->GetCharController()->context;
+                    if (isClimbing && a_actor->actorState1.sprinting) {
+
+                        a_actor->SetGraphVariableInt("climb_ClimbEndType", ClimbEndType::kJumpBackwards);
+                        if (a_actor->NotifyAnimationGraph("climb_ClimbEnd")) {
+                            context.currentState = RE::hkpCharacterStateType::kJumping;
+                            isClimbing = false;
+                        }// end climb
+
+                    } else if (isClimbing) {
+
+                        a_actor->SetGraphVariableInt("climb_ClimbEndType", ClimbEndType::kJumpForwards);
+                        if (a_actor->NotifyAnimationGraph("climb_ClimbEnd")) {
+                            context.currentState = RE::hkpCharacterStateType::kJumping;
+                            isClimbing = false;
+                        }// end climb
+
+                    } else if (context.currentState == RE::hkpCharacterStateType::kInAir) {
+
+                        a_actor->SetGraphVariableInt("climb_ClimbStartType", ClimbStartType::kClimbFromAir);
+                        if (a_actor->NotifyAnimationGraph("climb_ClimbStart")) {
+
+                            context.currentState = RE::hkpCharacterStateType::kClimbing;
+                            if (g_TDM->RequestYawControl(SKSE::GetPluginHandle(), 0.50f) == TDM_API::APIResult::OK || 
+                                g_TDM->RequestYawControl(SKSE::GetPluginHandle(), 0.50f) == TDM_API::APIResult::AlreadyGiven) {
+                            
+                                g_TDM->SetPlayerYaw(SKSE::GetPluginHandle(), output->normal.quad.m128_f32[1]);
+                                g_TDM->ReleaseYawControl(SKSE::GetPluginHandle());
+                            
+                            }
+                            isClimbing = true;
+
+                        }// start climb
+
+                    } else {
+
+                        a_actor->SetGraphVariableInt("climb_ClimbStartType", ClimbStartType::kClimbFromGround);
+                        if (a_actor->NotifyAnimationGraph("climb_ClimbStart")) {
+                            context.currentState = RE::hkpCharacterStateType::kClimbing;
+                            isClimbing = true;
+                        }// start climb
+
+                    }
                 }
             }
+
         }
     }
     return _Update(a_actor);

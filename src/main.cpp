@@ -62,6 +62,49 @@ static void SKSEMessageHandler(SKSE::MessagingInterface::Message* message) {
 
 }
 
+static void MessageHandler(SKSE::MessagingInterface::Message* message) {
+
+    switch (message->type) {
+        case SKSE::MessagingInterface::kDataLoaded: {
+            auto ptr = Loki::TrueClimbing::GetSingleton();
+            if (ptr->tControl) {
+                if (ptr->g_TDM) {
+                }
+            };
+            break;
+        }
+        case SKSE::MessagingInterface::kNewGame:
+        case SKSE::MessagingInterface::kPostLoadGame: {
+            break;
+        }
+        case SKSE::MessagingInterface::kPostLoad: {
+
+            Loki::TrueClimbing::GetSingleton()->g_TDM = reinterpret_cast<TDM_API::IVTDM2*>(TDM_API::RequestPluginAPI(TDM_API::InterfaceVersion::V2));
+            if (Loki::TrueClimbing::GetSingleton()->g_TDM) {
+                logger::info("Obtained TDM API -> {0:x}", (uintptr_t)Loki::TrueClimbing::GetSingleton()->g_TDM);
+            } 
+            else {
+                logger::warn("Failed to obtain TDM API");
+            };
+
+            Loki::Raycasting::GetSingleton()->g_TrueHUD = reinterpret_cast<TRUEHUD_API::IVTrueHUD3*>(TRUEHUD_API::RequestPluginAPI(TRUEHUD_API::InterfaceVersion::V3));
+            if (Loki::Raycasting::GetSingleton()->g_TrueHUD) {
+                logger::info("Obtained TrueHUD API -> {0:x}", (uintptr_t)Loki::Raycasting::GetSingleton()->g_TrueHUD);
+            }
+            else {
+                logger::warn("Failed to obtain TrueHUD API");
+            };
+
+            break;
+        }
+        case SKSE::MessagingInterface::kPostPostLoad: {
+        }
+        default:
+            break;
+    }
+
+}
+
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface * a_skse)
 {
     logger::info("Climbing loaded");

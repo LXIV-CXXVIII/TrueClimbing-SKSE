@@ -127,7 +127,8 @@ set(sources
 	src/main.cpp
 	src/TrueClimbing/TrueClimbing.cpp
 	src/TrueClimbing/TrueClimbing.h
-	src/TrueClimbing/TrueDirectionalMovementAPI.h
+	src/TrueClimbing/APIs/TrueDirectionalMovementAPI.h
+	src/TrueClimbing/APIs/TrueHUDAPI.h
 	src/TrueClimbing/Raycasting/Raycasting.cpp
 	src/TrueClimbing/Raycasting/Raycasting.h
 	src/PCH.cpp
