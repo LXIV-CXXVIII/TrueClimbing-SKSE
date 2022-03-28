@@ -1,15 +1,13 @@
 #pragma once
-#include "TrueClimbing/APIs/TrueHUDAPI.h"
+#include "Project/APIs/TrueHUDAPI.h"
 
 namespace Loki {
 
     class Raycasting {
 
     public:
-        Raycasting() {
-        }
-        ~Raycasting(){
-        }
+        Raycasting();
+        ~Raycasting();
         static Raycasting* GetSingleton() {
             static Raycasting singleton;
             return &singleton;

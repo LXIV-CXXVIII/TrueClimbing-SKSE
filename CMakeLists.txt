@@ -125,12 +125,14 @@ set(headers
 
 set(sources
 	src/main.cpp
-	src/TrueClimbing/TrueClimbing.cpp
-	src/TrueClimbing/TrueClimbing.h
-	src/TrueClimbing/APIs/TrueDirectionalMovementAPI.h
-	src/TrueClimbing/APIs/TrueHUDAPI.h
-	src/TrueClimbing/Raycasting/Raycasting.cpp
-	src/TrueClimbing/Raycasting/Raycasting.h
+	src/Project/TrueClimbing.cpp
+	src/Project/TrueClimbing.h
+	src/Project/APIs/TrueDirectionalMovementAPI.h
+	src/Project/APIs/TrueHUDAPI.h
+	src/Project/Hooks/Hooks.cpp
+	src/Project/Hooks/Hooks.h
+	src/Project/Raycasting/Raycasting.cpp
+	src/Project/Raycasting/Raycasting.h
 	src/PCH.cpp
 )
 

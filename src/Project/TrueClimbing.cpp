@@ -1,18 +1,20 @@
-#include "TrueClimbing/TrueClimbing.h"
-
-void* Loki::TrueClimbing::CodeAllocation(Xbyak::CodeGenerator& a_code, SKSE::Trampoline* t_ptr) {
-    auto result = t_ptr->allocate(a_code.getSize());
-    std::memcpy(result, a_code.getCode(), a_code.getSize());
-    return result;
-}
+#include "Project/TrueClimbing.h"
 
 Loki::TrueClimbing::TrueClimbing() {
     CSimpleIniA ini;
     ini.SetUnicode();
-    auto filename = L"Data/SKSE/Plugins/loki_Climbing.ini";
+    auto filename = L"Data/SKSE/Plugins/loki_TrueClimbing.ini";
     SI_Error rc = ini.LoadFile(filename);
 
     rayCastDist = ini.GetDoubleValue("SETTINGS", "fRayCastDistance", -1.00f);
+    rayCastLowVaultDist = ini.GetDoubleValue("SETTINGS", "fRayCastLowVaultDistance", -1.00f);
+    rayCastMediumVaultDist = ini.GetDoubleValue("SETTINGS", "fRayCastMediumVaultDistance", -1.00f);
+    rayCastHighVaultDist = ini.GetDoubleValue("SETTINGS", "fRayCastHighVaultDistance", -1.00f);
+    rayCastClimbDist = ini.GetDoubleValue("SETTINGS", "fRayCastClimbDistance", -1.00f);
+    rayCastLowVaultHeight = ini.GetDoubleValue("SETTINGS", "fRayCastLowVaultHeight", -1.00f);
+    rayCastMediumVaultHeight = ini.GetDoubleValue("SETTINGS", "fRayCastMediumVaultHeight", -1.00f);
+    rayCastHighVaultHeight = ini.GetDoubleValue("SETTINGS", "fRayCastHighVaultHeight", -1.00f);
+    rayCastClimbHeight = ini.GetDoubleValue("SETTINGS", "fRayCastClimbHeight", -1.00f);
     return;
 }
 
@@ -22,76 +24,6 @@ Loki::TrueClimbing::~TrueClimbing() {
 Loki::TrueClimbing* Loki::TrueClimbing::GetSingleton() {
     static Loki::TrueClimbing* singleton = new Loki::TrueClimbing();
     return singleton;
-}
-
-void Loki::TrueClimbing::InstallUpdateHook() {
-    REL::Relocation<std::uintptr_t> ActorUpdate{ REL::ID(39375) };
-
-    auto& trampoline = SKSE::GetTrampoline();
-    _Update = trampoline.write_call<5>(ActorUpdate.address() + 0x8AC, Update);
-
-    logger::info("Actor Update hook injected");
-}
-
-void Loki::TrueClimbing::InstallSimulateClimbingHook() {
-    REL::Relocation<std::uintptr_t> ClimbSim{ REL::ID(78195) };
-
-    auto& trampoline = SKSE::GetTrampoline();
-    trampoline.write_branch<5>(ClimbSim.address(), &bhkCharacterStateClimbing_SimPhys);
-
-    logger::info("Climbing Simulation hook injected");
-}
-
-void Loki::TrueClimbing::InstallClimbSimHook() {
-    REL::Relocation<std::uintptr_t> ClimbSim{ REL::ID(78195/*e1d520*/) };
-    REL::Relocation<std::uintptr_t> subroutine{ REL::ID(76440/*dc08e0*/) };
-
-    struct Patch : Xbyak::CodeGenerator {
-        Patch(std::uintptr_t a_sub) {
-            Xbyak::Label l1;
-            Xbyak::Label l2;
-
-            cmp(dword[rdx + 0x21C], 0x0B); // wantState
-            jz(l1);
-            mov(rcx, rdx);
-            jmp(ptr[rip + l2]);
-
-            L(l1);
-            or_(dword[rdx + 0x218], 0x400); // set kCanJump
-            xorps(xmm2, xmm2);
-            //xorps  (xmm1, xmm1); //og code
-            xorps(xmm1, xmm1); // custom code
-            movss(xmm0, dword[rdx + 0xB4]); // velocityMod[1] ogcode Y velocity
-            movaps(xmm2, ptr[rdx + 0xB0]); //->
-              // xmm2[0] = (velModX)
-              // xmm2[1] = (velModY)
-              // xmm2[2] = (velModZ)
-              // xmm2[3] = (?)
-            unpcklps(xmm2, xmm0); //->
-              // xmm2[0] = xmm2[0] (velModX)
-              // xmm2[1] = xmm0[0] (velModY)
-              // xmm2[2] = xmm2[1] (velModY)
-              // xmm2[3] = xmm0[1] 0
-            xorps(xmm0, xmm0);
-            unpcklps(xmm2, xmm0); //->
-              // xmm2[0] = xmm2[0] (velModX)
-              // xmm2[1] = xmm0[0] 0
-              // xmm2[2] = xmm2[1] (velModY)
-              // xmm2[3] = xmm0[1] 0
-            mulss(xmm2, ptr[rdx + 0xDC]); // mul outVelocity X by rotCenter X
-            movaps(ptr[rdx + 0x90], xmm2); // outVelocity
-            ret();
-
-            L(l2);
-            dq(a_sub);
-        }
-    };
-
-    Patch patch(subroutine.address());
-    patch.ready();
-
-    auto& trampoline = SKSE::GetTrampoline();
-    trampoline.write_branch<5>(ClimbSim.address(), CodeAllocation(patch, &trampoline));
 }
 
 void Loki::TrueClimbing::ControllerSubroutine(RE::bhkCharacterController* a_controller) {
@@ -107,6 +39,7 @@ void Loki::TrueClimbing::bhkCharacterStateClimbing_SimPhys(RE::bhkCharacterState
     __m128 vModY = { a_controller->velocityMod.quad.m128_f32[1], 0.0f, 0.0f, 0.0f };
 
     if (a_controller->wantState == RE::hkpCharacterStateType::kClimbing) {
+
         a_controller->flags.set(RE::CHARACTER_FLAGS::kCanJump);
         RE::hkVector4 hkVelocityMod = {};
         hkVelocityMod.quad = _mm_unpacklo_ps(_mm_unpacklo_ps(vMod, vModY), z128);
@@ -114,6 +47,7 @@ void Loki::TrueClimbing::bhkCharacterStateClimbing_SimPhys(RE::bhkCharacterState
         hkVelocityMod.quad.m128_f32[1] *= a_controller->rotCenter.quad.m128_f32[1];
         hkVelocityMod.quad.m128_f32[2] *= a_controller->rotCenter.quad.m128_f32[2];
         a_controller->outVelocity = hkVelocityMod;
+
     } 
     else {
         ControllerSubroutine(a_controller);
@@ -220,7 +154,7 @@ void Loki::TrueClimbing::Update(RE::Actor* a_actor) {
                 bool jmp;
                 a_actor->GetGraphVariableBool("CanJump", jmp);
                 if (jmp) {
-                    auto context = a_actor->GetCharController()->context;
+                    auto& context = a_actor->GetCharController()->context;
                     if (isClimbing && a_actor->actorState1.sprinting) {
 
                         a_actor->SetGraphVariableInt("climb_ClimbEndType", ClimbEndType::kJumpBackwards);
@@ -258,8 +192,17 @@ void Loki::TrueClimbing::Update(RE::Actor* a_actor) {
 
                         a_actor->SetGraphVariableInt("climb_ClimbStartType", ClimbStartType::kClimbFromGround);
                         if (a_actor->NotifyAnimationGraph("climb_ClimbStart")) {
+
                             context.currentState = RE::hkpCharacterStateType::kClimbing;
+                            if (g_TDM->RequestYawControl(SKSE::GetPluginHandle(), 0.50f) == TDM_API::APIResult::OK ||
+                                g_TDM->RequestYawControl(SKSE::GetPluginHandle(), 0.50f) == TDM_API::APIResult::AlreadyGiven) {
+
+                                g_TDM->SetPlayerYaw(SKSE::GetPluginHandle(), output->normal.quad.m128_f32[1]);
+                                g_TDM->ReleaseYawControl(SKSE::GetPluginHandle());
+
+                            }
                             isClimbing = true;
+
                         }// start climb
 
                     }
